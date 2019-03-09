@@ -22,9 +22,17 @@ public:
     int getThreadID();
     int getPriority();
     int getParentID();
-
+    int getResponseTime();
+    int getTurnAroundTime();
+    int getIO();    
+    int getCPU();
+    
+    void setStartTime(int t);
+    void setEndTime(int t);
+    void setCPU(int t);
+    void setIO(int t);
 private:
-    int arrivalTime, burstCount, thd_state, priority, id, parent_proc; 
+    int arrivalTime, startTime, endTime, turnAroundTime, responseTime, cpuTime, ioTime, burstCount, thd_state, priority, id, parent_proc; 
     //ifstream inputFile;
     queue<Burst*> bursts;
 };

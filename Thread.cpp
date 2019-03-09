@@ -57,3 +57,35 @@ int Thread::getParentID(){
     return parent_proc;
 };
 
+int Thread::getResponseTime(){
+    return responseTime;
+};
+
+int Thread::getTurnAroundTime(){
+    return turnAroundTime; 
+};
+
+int Thread::getIO(){
+    return ioTime;
+};    
+
+int Thread::getCPU(){
+    return cpuTime;
+};
+
+void Thread::setStartTime(int t){
+    startTime = t;
+};
+
+void Thread::setEndTime(int t){
+    endTime = t;
+};
+
+void Thread::setCPU(int t){
+    cpuTime = t;
+};
+
+void Thread::setIO(int t){
+    ioTime = t;
+};
+
