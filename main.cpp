@@ -11,15 +11,40 @@
 #include <vector>
 #include <fstream>
 #include <stack>
-
+#include <unistd.h>
+//#include <getopt.h>
 using namespace std;
 
-int main(int argc, const char * argv[]) {
+int main(int argc, char * argv[]) {
     
     //initialize the file stream, process count, and switch costs
     ifstream fin;
     int proc_count, thread_cost, proc_cost;
-    fin.open(argv[1]);
+    
+    //process command line arguments
+    if( argc == 2 ){ fin.open(argv[1]); }
+    else {
+        int opt = 0;
+        while((opt = getopt(argc,argv,"ahtv")) != -1){
+            switch (opt) {
+            case 'a':
+                cout << "flag was a\n";
+                break;
+            case 'h':
+                cout << "flag was h\n";
+                break;
+            case 't':
+                cout << "flag was t\n";
+                break;
+            case 'v':
+                cout << "flag was v\n";
+                break;
+            default:
+                break;
+            }
+        }
+        fin.open(argv[argc-1]);
+    }
     if(!fin.is_open()) cerr << "Error opening input file" << endl;
     fin >> proc_count >> thread_cost >> proc_cost;
 
