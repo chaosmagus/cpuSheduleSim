@@ -2,7 +2,7 @@
 //
 
 #include "Proc.hpp"
-
+#include <iostream>
 
 Proc::Proc(){}
 
@@ -22,6 +22,7 @@ Thread* Proc::nxtThd(ifstream &fin, int thread_id){
     int t_arrive, bstCount; 
     fin >> t_arrive >> bstCount;
     Thread* thread = new Thread(fin, type, t_arrive, bstCount, thread_id, this->id);
+    //cout << "cpu: " << thread->getCPU() << " io: " << thread->getIO() << endl;
     return thread;
 };
 

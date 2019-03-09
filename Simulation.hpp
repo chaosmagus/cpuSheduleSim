@@ -31,14 +31,12 @@ public:
     
     //member functions: read data from file and pass to constructors
     Proc* nxtProc(ifstream &fin);    
-    //Event* nxtEvent();
-    //Burst* nxtBst();    
     vector<Proc*> getProcVec();
     void printEvents();
 
     priority_queue<Event*, vector<Event*>, Compare> getEventQ();
 private:
-    int procTotal, txCost, pxCost;
+    int procTotal, txCost, pxCost, sysRT, sysTAT, sysTotal, intTotal, intRT, intTAT, normRT, normTAT, normTotal, batchTotal, batchRT, batchTAT;
     vector<Proc*> procsToRun;
     priority_queue<Event*, vector<Event*>, Compare> eventQ;
 };

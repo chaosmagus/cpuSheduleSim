@@ -76,6 +76,10 @@ int Thread::getCPU(){
     return cpuTime;
 };
 
+int Thread::getState(){
+    return thd_state;
+};
+
 void Thread::setStartTime(int t){
     startTime = t;
 };
@@ -84,11 +88,6 @@ void Thread::setEndTime(int t){
     endTime = t;
 };
 
-void Thread::setCPU(int t){
-    cpuTime = t;
+void Thread::updateState(int state){
+    thd_state = state;
 };
-
-void Thread::setIO(int t){
-    ioTime = t;
-};
-

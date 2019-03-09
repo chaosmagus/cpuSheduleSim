@@ -26,11 +26,11 @@ public:
     int getTurnAroundTime();
     int getIO();    
     int getCPU();
+    int getState();
     
+    void updateState(int state);
     void setStartTime(int t);
     void setEndTime(int t);
-    void setCPU(int t);
-    void setIO(int t);
 private:
     int arrivalTime, startTime, endTime, turnAroundTime, responseTime, cpuTime, ioTime, burstCount, thd_state, priority, id, parent_proc; 
     //ifstream inputFile;

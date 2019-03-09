@@ -21,6 +21,23 @@ Proc* Simulation::nxtProc(ifstream &fin){
     int id, type, threadCount;
     fin  >> id >> type >> threadCount;
     Proc* proc = new Proc(fin, id, type, threadCount);
+    switch (type) {
+        case 0: this->sysTotal += threadCount;
+                cout << sysTotal << " [SYSTEM]" << endl;
+                break;
+        case 1: this->intTotal += threadCount;
+                cout << intTotal << " [INTERACTIVE]" << endl;
+                break;
+        case 2: this->normTotal += threadCount; 
+                cout << normTotal << " [NORMAL]" << endl;
+                break;
+        case 3: this->batchTotal += threadCount;
+                cout << batchTotal << " [BATCH]" << endl;
+                break;
+        default:
+                cerr << "INVALID TYPE CODE" << endl;
+                break;
+        }
     //loop through proc threads, create events, add to pque
     for(int i = 0; i < proc->getThdCnt(); i++){
         int t = proc->getThreadQ()[i]->getBurstCount();
