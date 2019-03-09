@@ -13,8 +13,8 @@ Thread::Thread(ifstream &fin, int thd_priority, int t_arrival, int bCount, int t
     thd_state = 0;
     id = thread_id;
     parent_proc = pproc;
-    //inputFile = fin; 
-    
+    cpuTime = 0;
+    ioTime = 0; 
     //loop to add bursts
     for(int i = 0; i < (bCount - 1); i ++){
         bursts.push(this->nxtBst(fin));
@@ -23,12 +23,15 @@ Thread::Thread(ifstream &fin, int thd_priority, int t_arrival, int bCount, int t
     int finalBurst;
     fin >> finalBurst;
     Burst* final = new Burst(finalBurst, 0);
+    this->cpuTime += finalBurst;
     bursts.push(final);
 }
 
 Burst* Thread::nxtBst(ifstream &fin){
     int t_cpu, t_io; 
     fin >> t_cpu >> t_io;
+    this->cpuTime += t_cpu;
+    this->ioTime += t_io;
     Burst* burst = new Burst(t_cpu, t_io);
     return burst;
 };
