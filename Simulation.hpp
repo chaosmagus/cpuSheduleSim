@@ -36,7 +36,8 @@ public:
 
     priority_queue<Event*, vector<Event*>, Compare> getEventQ();
 private:
-    int procTotal, txCost, pxCost, sysRT, sysTAT, sysTotal, intTotal, intRT, intTAT, normRT, normTAT, normTotal, batchTotal, batchRT, batchTAT;
+    int procTotal, txCost, pxCost, sysRT, sysTAT, sysTotal, intTotal, intRT, intTAT, normRT, normTAT, 
+        normTotal, batchTotal, batchRT, batchTAT, totalTime, ioTime, cpuTime, dispTime, idle;
     vector<Proc*> procsToRun;
     priority_queue<Event*, vector<Event*>, Compare> eventQ;
 };

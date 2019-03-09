@@ -15,24 +15,27 @@ Simulation::Simulation(ifstream &fin, int pTotal, int tCost, int pCost){
     for(int i = 0; i < procTotal; i++){
        procsToRun.push_back(this->nxtProc(fin)); 
     }
+    //cout << cpuTime << "\t" << ioTime << endl;
 }
 
 Proc* Simulation::nxtProc(ifstream &fin){
     int id, type, threadCount;
     fin  >> id >> type >> threadCount;
     Proc* proc = new Proc(fin, id, type, threadCount);
+    this->ioTime += proc->proc_io();
+    this->cpuTime += proc->proc_cpu();
     switch (type) {
         case 0: this->sysTotal += threadCount;
-                cout << sysTotal << " [SYSTEM]" << endl;
+                //cout << sysTotal << " [SYSTEM]" << endl;
                 break;
         case 1: this->intTotal += threadCount;
-                cout << intTotal << " [INTERACTIVE]" << endl;
+                //cout << intTotal << " [INTERACTIVE]" << endl;
                 break;
         case 2: this->normTotal += threadCount; 
-                cout << normTotal << " [NORMAL]" << endl;
+                //cout << normTotal << " [NORMAL]" << endl;
                 break;
         case 3: this->batchTotal += threadCount;
-                cout << batchTotal << " [BATCH]" << endl;
+                //cout << batchTotal << " [BATCH]" << endl;
                 break;
         default:
                 cerr << "INVALID TYPE CODE" << endl;
