@@ -28,14 +28,19 @@ int main(int argc, char * argv[]) {
     if( argc == 2 ){ fin.open(argv[1]); }
     else {
         int opt = 0;
+        string ln;
         while((opt = getopt(argc,argv,"a:htv")) != -1){
             switch (opt) {
             case 'a':
                 algo = optarg;
-                cout << "flag was a\n w/algo: " << algo << endl;
                 break;
             case 'h':
-                cout << "flag was h\n";
+                fin.open("README.txt");;
+                while(!fin.eof()){
+                    getline(fin, ln); 
+                    cout << ln << endl;
+                }
+                exit(1);
                 break;
             case 't':
                 cout << "flag was t\n";
@@ -59,9 +64,13 @@ int main(int argc, char * argv[]) {
 //convert to lowercase, check valid entry, and run simulation with selected algorithm
     transform(algo.begin(), algo.end(), algo.begin(), ::tolower);
     if(algo == "fcfs"){
+        //mysim.runFCFS();
     } else if(algo == "rr"){
+        //mysim.runRR(); 
     } else if(algo == "priority"){
+        //mysim.runPRIORITY();
     } else if(algo == "custom"){
+        //mysim.runCUSTOM();
     } else {
         cerr << "INVALID ALGORITHM ENTERED\n";
         exit(1);
