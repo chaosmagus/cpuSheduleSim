@@ -64,7 +64,7 @@ int main(int argc, char * argv[]) {
 //convert to lowercase, check valid entry, and run simulation with selected algorithm
     transform(algo.begin(), algo.end(), algo.begin(), ::tolower);
     if(algo == "fcfs"){
-        //mysim.runFCFS();
+        mysim.runFCFS();
     } else if(algo == "rr"){
         //mysim.runRR(); 
     } else if(algo == "priority"){
