@@ -32,7 +32,8 @@ public:
     void setStartTime(int t);
     void setEndTime(int t);
 private:
-    int arrivalTime, startTime, endTime, turnAroundTime, responseTime, cpuTime, ioTime, burstCount, thd_state, priority, id, parent_proc; 
+    int arrivalTime, startTime, endTime, turnAroundTime, responseTime, cpuTime, ioTime, burstCount, thd_state,
+         priority, id, parent_proc; 
     //ifstream inputFile;
     queue<Burst*> bursts;
 };

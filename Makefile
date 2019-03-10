@@ -16,9 +16,9 @@ LDFLAGS = -g
 #
 # You should be able to add object files here without changing anything else
 #
-TARGET = main
-OBJ_FILES = ${TARGET}.o  Proc.o Thread.o Simulation.o Burst.o Event.o
-INC_FILES = ${TARGET}.hpp Proc.hpp Thread.hpp Simulation.hpp Burst.hpp Event.hpp
+TARGET = simulation
+OBJ_FILES = ${TARGET}.o  Proc.o Thread.o Simulator.o Burst.o Event.o
+INC_FILES = ${TARGET}.hpp Proc.hpp Thread.hpp Simulator.hpp Burst.hpp Event.hpp
 
 #
 # Any libraries we might need.

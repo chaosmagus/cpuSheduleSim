@@ -16,9 +16,12 @@ public:
     int getProcID();
     int getProcType();
     int getThdCnt();
+    int proc_cpu();
+    int proc_io();    
+
 private:
     //ifstream inputFile;
-    int id, type, threadCount;
+    int id, type, threadCount, cpu_time, io_time;
     vector<Thread*> threads;
 };
 #endif /* Process_hpp */
