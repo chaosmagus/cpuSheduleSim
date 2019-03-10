@@ -12,16 +12,19 @@
 #include <fstream>
 #include <stack>
 #include <unistd.h>
-//#include <getopt.h>
+#include <algorithm>
+
 using namespace std;
 
 int main(int argc, char * argv[]) {
-    
-    //initialize the file stream, process count, and switch costs
+
+//initialize the file stream, process count, and switch costs
     ifstream fin;
     int proc_count, thread_cost, proc_cost;
     string algo = "fcfs"; 
-    //process command line arguments
+    
+
+//process command line arguments, check for error opening filestream
     if( argc == 2 ){ fin.open(argv[1]); }
     else {
         int opt = 0;
@@ -47,11 +50,24 @@ int main(int argc, char * argv[]) {
         fin.open(argv[argc-1]);
     }
     if(!fin.is_open()) cerr << "Error opening input file" << endl;
-    fin >> proc_count >> thread_cost >> proc_cost;
 
-    //create a simulation objecti, print the event queue
+
+//get the total proc count, plus thread and proc switch cost, then initialize Simulator object
+    fin >> proc_count >> thread_cost >> proc_cost;
     Simulator mysim(fin, proc_count, thread_cost, proc_cost);
-    
+ 
+//convert to lowercase, check valid entry, and run simulation with selected algorithm
+    transform(algo.begin(), algo.end(), algo.begin(), ::tolower);
+    if(algo == "fcfs"){
+    } else if(algo == "rr"){
+    } else if(algo == "priority"){
+    } else if(algo == "custom"){
+    } else {
+        cerr << "INVALID ALGORITHM ENTERED\n";
+        exit(1);
+    }
+   
+
 
 
 //THE FOLLOWING BLOCK USED FOR DEBUG DURING DEVELOPMENT
