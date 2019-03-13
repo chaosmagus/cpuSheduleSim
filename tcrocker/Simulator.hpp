@@ -8,7 +8,6 @@
 #include <stdio.h>
 #include <math.h>
 #include <vector>
-#include <queue>
 #include <fstream>
 #include <iostream>
 #include "Proc.hpp"
@@ -40,19 +39,14 @@ public:
     void runPRIORITY();
     void runCUSTOM();
     void thread_arrived();
-    void dispatch_invoked(Thread* t);
-    void proc_dispatch_complete(Thread* t);
-    void thd_dispatch_complete(Thread* t);
-    void cleanup();
 
     priority_queue<Event*, vector<Event*>, Compare> getEvents();
     priority_queue<Event*, vector<Event*>, Compare> getArrivalEventQ();
 private:
     int procTotal, txCost, pxCost, sysRT, sysTAT, sysTotal, intTotal, intRT, intTAT, normRT, normTAT, 
-        normTotal, batchTotal, batchRT, batchTAT, totalTime, ioTime, cpuTime, dispTime, idle, currentProcID;
+        normTotal, batchTotal, batchRT, batchTAT, totalTime, ioTime, cpuTime, dispTime, idle;
     vector<Proc*> procsToRun;
     priority_queue<Event*, vector<Event*>, Compare> arrivalEventQ;
-    queue<Thread*> ready;
     priority_queue<Event*, vector<Event*>, Compare> events;
 };
 #endif /* Simulator_hpp */

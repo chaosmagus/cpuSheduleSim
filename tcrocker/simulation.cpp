@@ -77,9 +77,30 @@ int main(int argc, char * argv[]) {
         cerr << "INVALID ALGORITHM ENTERED\n";
         exit(1);
     }
-  
-    // mysim.cleanup();
- 
+   
+
+
+
+//THE FOLLOWING BLOCK USED FOR DEBUG DURING DEVELOPMENT
+    //mysim.printEvents();
+    //loop through mysim's proc vec and cout to verify file parsing
+    //vector<Proc*> tmp = mysim.getProcVec(); 
+    /*for(int i = 0; i < tmp.size(); i++){
+        cout << tmp[i]->getProcID() << " " << tmp[i]->getProcType() << " " <<tmp[i]->getThdCnt() << endl;
+        queue<Thread*> threadQ = tmp[i]->getThreadQ();
+        // thread arrival_t and burst_count
+        while(!threadQ.empty()){
+            cout << threadQ.front()->getArrival() << " " << threadQ.front()->getBurstCount() << endl;
+            queue<Burst*> burstQ = threadQ.front()->getBurstQ();
+            //burst lengths
+            while(!burstQ.empty()){
+                cout << burstQ.front()->getCPU() << " " << burstQ.front()->getIO() << endl;
+                burstQ.pop();
+            }
+            threadQ.pop(); 
+        }         
+    }*/
+
     return 0;
 }
 

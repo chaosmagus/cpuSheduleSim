@@ -11,8 +11,7 @@ Simulator::Simulator(ifstream &fin, int pTotal, int tCost, int pCost){
     txCost = tCost;
     pxCost = pCost;
     totalTime = 0;
-    currentProcID = -1; 
-   //loop here to build proc vector using nxtProc()
+    //loop here to build proc vector using nxtProc()
     for(int i = 0; i < procTotal; i++){
        procsToRun.push_back(this->nxtProc(fin)); 
     }
@@ -66,49 +65,18 @@ priority_queue<Event*, vector<Event*>, Compare> Simulator::getArrivalEventQ(){
 
 void Simulator::thread_arrived(){
     Event* e = arrivalEventQ.top();
-    while(e->getEventTime() <= totalTime && !(arrivalEventQ.empty())){
+    while(e->getEventTime() <= totalTime){
         printEvent(e->getEventTime(), e);
         events.push(e);
-        ready.push(e->getParentThread());
         arrivalEventQ.pop();
         e = arrivalEventQ.top();
     }
-};
-
-void Simulator::dispatch_invoked(Thread* t){
-    Event* e = new Event (7, t, totalTime);
-    events.push(e);
-    printEvent(totalTime, e); 
-    if(t->getParentID() != currentProcID){ totalTime += pxCost;}
-    else {totalTime += txCost;}
-    thread_arrived(); 
-};
-
-void Simulator::thd_dispatch_complete(Thread* t){
-    Event* e = new Event(1, t, totalTime);    
-    t->updateState(1);
-    events.push(e);
-    printEvent(totalTime, e);
-    t->setStartTime(totalTime);  
-
-};
-
-void Simulator::proc_dispatch_complete(Thread* t){
-    Event* e = new Event(2, t, totalTime);    
-    t->updateState(1);
-    events.push(e);
-    printEvent(totalTime, e);
-    t->setStartTime(totalTime);  
-     
 };
 
 void Simulator::runFCFS(){
     //enque any new threads that have arrived, call dispatcher
     thread_arrived();
     //invoke_dispatch();
-    dispatch_invoked(ready.front());
-    if(ready.front()->getParentID() != currentProcID){ proc_dispatch_complete(ready.front());}
-    else { thd_dispatch_complete(ready.front()); }
 };
 
 void Simulator::runRR(){
@@ -148,7 +116,7 @@ void  Simulator::printEvent(int time, Event* e){
                     break;
         }
         cout << "\tThread " << e->getParentThread()->getThreadID() << " in process " << 
-        e->getParentThread()->getParentID() << " ";
+           e->getParentThread()->getParentID() << " ";
         int priority = e->getParentThread()->getPriority(); 
         switch (priority) {
             case 0: cout << "[SYSTEM]" << endl;
@@ -163,25 +131,24 @@ void  Simulator::printEvent(int time, Event* e){
                     cerr << "INVALID PRIORITY CODE" << endl;
                     break;
         }
-        //print thread state change or the dispatch choice
-        if(event_type == 7){
-            cout << "\tSelected from " << ready.size() << " threads\n\n";
-        } else {
-            int state = e->getParentThread()->getState();
-            cout << "\tTransitioned from ";
-            switch (state) {
-                case 0: cout << "NEW to READY\n" << endl;
-                        break;
-                case 1: cout << "READY to RUNNING\n" << endl;
-                        break;
-                case 2: cout << "RUNNING to BLOCKED\n" << endl;
-                        break;
-                case 3: cout << "BLOCKED to READY\n" << endl;
-                        break;
-                default:
-                        cerr << "INVALID STATE\n" << endl;
-                        break;
-            }
+        //print thread state change
+        int state = e->getParentThread()->getState();
+        cout << "\tTransitioned from ";
+        switch (state) {
+            case 0: cout << "NEW to READY" << endl;
+                    break;
+            case 1: cout << "READY to RUNNING" << endl;
+                    break;
+            case 2: cout << "RUNNING to BLOCKED" << endl;
+                    break;
+            case 3: cout << "BLOCKED to READY" << endl;
+                    break;
+            default:
+                    cerr << "INVALID STATE" << endl;
+                    break;
         }
 };
+
+
+
 
