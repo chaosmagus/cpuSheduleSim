@@ -27,6 +27,14 @@ Thread::Thread(ifstream &fin, int thd_priority, int t_arrival, int bCount, int t
     bursts.push(final);
 }
 
+void Thread::setBlockTime(int t){
+    blockTime = t;
+};
+
+int Thread::getBlockTime() const{
+    return blockTime;
+};
+
 Burst* Thread::nxtBst(ifstream &fin){
     int t_cpu, t_io; 
     fin >> t_cpu >> t_io;

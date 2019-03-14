@@ -27,13 +27,15 @@ public:
     int getIO();    
     int getCPU();
     int getState();
-    
+    int getBlockTime() const;
+     
     void updateState(int state);
     void setStartTime(int t);
     void setEndTime(int t);
+    void setBlockTime(int t);
 private:
     int arrivalTime, startTime, endTime, turnAroundTime, responseTime, cpuTime, ioTime, burstCount, thd_state,
-         priority, id, parent_proc; 
+         priority, id, parent_proc, blockTime; 
     //ifstream inputFile;
     queue<Burst*> bursts;
 };

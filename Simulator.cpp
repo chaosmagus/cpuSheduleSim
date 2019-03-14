@@ -64,6 +64,11 @@ priority_queue<Event*, vector<Event*>, Compare> Simulator::getArrivalEventQ(){
     return arrivalEventQ;
 };
 
+void Simulator::incrementTime(int t){
+    totalTime += t;
+    thread_arrived();
+};
+
 void Simulator::thread_arrived(){
     Event* e = arrivalEventQ.top();
     while(e->getEventTime() <= totalTime && !(arrivalEventQ.empty())){
@@ -76,39 +81,82 @@ void Simulator::thread_arrived(){
 };
 
 void Simulator::dispatch_invoked(Thread* t){
+    //create event and push to event queue
     Event* e = new Event (7, t, totalTime);
     events.push(e);
     printEvent(totalTime, e); 
-    if(t->getParentID() != currentProcID){ totalTime += pxCost;}
-    else {totalTime += txCost;}
-    thread_arrived(); 
+    //increment time step
+    if(t->getParentID() != currentProcID){ incrementTime(pxCost);}
+    else {incrementTime(txCost);}
+    //io_burst(); 
 };
 
 void Simulator::thd_dispatch_complete(Thread* t){
     Event* e = new Event(1, t, totalTime);    
+    currentProcID = t->getParentID();
+    t->setStartTime(totalTime);  
     t->updateState(1);
     events.push(e);
     printEvent(totalTime, e);
-    t->setStartTime(totalTime);  
 
 };
 
 void Simulator::proc_dispatch_complete(Thread* t){
+    //set thd starting time, update state to ready/run(ie '1')
     Event* e = new Event(2, t, totalTime);    
+    currentProcID = t->getParentID();
+    t->setStartTime(totalTime);  
     t->updateState(1);
     events.push(e);
     printEvent(totalTime, e);
-    t->setStartTime(totalTime);  
-     
+};
+
+void Simulator::cpu_burst(Thread* t){
+    incrementTime(t->getBurstQ().front()->getCPU());    
+    //io_burst();
+    //if this burst is the last burst in the thread, set end time, update state to run/exit(ie '5')
+    if(t->getBurstQ().front()->isLast()){
+        t->setEndTime(totalTime);
+        t->updateState(4);       
+        Event* e = new Event(3, t, totalTime);    
+        events.push(e);
+        printEvent(totalTime, e);
+    } else {
+    //otherwise update state to run/blk (ie '2'), push thread onto 'blocked' queue
+    t->updateState(2);
+    Event* e = new Event(3, t, totalTime);    
+    t->setBlockTime(totalTime + t->getBurstQ().front()->getIO());
+    blocked.push(t);
+    events.push(e);
+    printEvent(totalTime, e);
+    }
+};
+
+void Simulator::io_burst(){
+    while(blocked.top()->getBlockTime() <= totalTime && !(blocked.empty())){
+        blocked.top()->updateState(3);
+        ready.push(blocked.top());
+        blocked.top()->updateState(3);  
+        Event* e = new Event(4, blocked.top(), blocked.top()->getBlockTime());    
+        events.push(e);
+        printEvent(totalTime, e);
+        blocked.top()->getBurstQ().pop();
+        blocked.pop();
+    }
 };
 
 void Simulator::runFCFS(){
     //enque any new threads that have arrived, call dispatcher
     thread_arrived();
     //invoke_dispatch();
-    dispatch_invoked(ready.front());
-    if(ready.front()->getParentID() != currentProcID){ proc_dispatch_complete(ready.front());}
-    else { thd_dispatch_complete(ready.front()); }
+    while(!ready.empty()){  
+        dispatch_invoked(ready.front());
+        cout << "current proc id " << currentProcID << endl;
+        cout << "next proc id " << ready.front()->getParentID() << endl;
+        if(ready.front()->getParentID() != currentProcID){ proc_dispatch_complete(ready.front());}
+        else { thd_dispatch_complete(ready.front()); }
+        cpu_burst(ready.front());
+        ready.pop();}
 };
 
 void Simulator::runRR(){
@@ -177,6 +225,8 @@ void  Simulator::printEvent(int time, Event* e){
                 case 2: cout << "RUNNING to BLOCKED\n" << endl;
                         break;
                 case 3: cout << "BLOCKED to READY\n" << endl;
+                        break;
+                case 4: cout << "RUNNING to EXIT\n" << endl;
                         break;
                 default:
                         cerr << "INVALID STATE\n" << endl;

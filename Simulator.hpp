@@ -25,6 +25,12 @@ class Compare{
             return e1->getEventTime() > e2->getEventTime();
         }
 };
+class CompareT{
+    public:
+        int operator() (const Thread* t1, const Thread* t2){
+            return t1->getBlockTime() > t2->getBlockTime();
+        }
+};
 
 class Simulator {
 public:
@@ -43,7 +49,10 @@ public:
     void dispatch_invoked(Thread* t);
     void proc_dispatch_complete(Thread* t);
     void thd_dispatch_complete(Thread* t);
+    void io_burst();
+    void cpu_burst(Thread* t);
     void cleanup();
+    void incrementTime(int t);
 
     priority_queue<Event*, vector<Event*>, Compare> getEvents();
     priority_queue<Event*, vector<Event*>, Compare> getArrivalEventQ();
@@ -51,6 +60,7 @@ private:
     int procTotal, txCost, pxCost, sysRT, sysTAT, sysTotal, intTotal, intRT, intTAT, normRT, normTAT, 
         normTotal, batchTotal, batchRT, batchTAT, totalTime, ioTime, cpuTime, dispTime, idle, currentProcID;
     vector<Proc*> procsToRun;
+    priority_queue<Thread*, vector<Thread*>, CompareT> blocked;
     priority_queue<Event*, vector<Event*>, Compare> arrivalEventQ;
     queue<Thread*> ready;
     priority_queue<Event*, vector<Event*>, Compare> events;
