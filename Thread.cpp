@@ -44,7 +44,7 @@ Burst* Thread::nxtBst(ifstream &fin){
     return burst;
 };
 
-queue<Burst*> Thread::getBurstQ(){
+queue<Burst*>& Thread::getBurstQ(){
     return bursts; 
 };
 

@@ -12,7 +12,7 @@ public:
     Proc();
     Proc(ifstream &fin, int proc_id, int proc_type, int tCount);
     Thread* nxtThd(ifstream &fin, int thread_id);
-    vector<Thread*> getThreadQ();
+    vector<Thread*>& getThreadQ();
     int getProcID();
     int getProcType();
     int getThdCnt();

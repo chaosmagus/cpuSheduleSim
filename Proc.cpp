@@ -30,7 +30,7 @@ Thread* Proc::nxtThd(ifstream &fin, int thread_id){
     return thread;
 };
 
-vector<Thread*> Proc::getThreadQ(){
+vector<Thread*>& Proc::getThreadQ(){
     return threads;
 };
 

@@ -16,7 +16,7 @@ public:
     Thread();
     Thread(ifstream &fin, int thd_priority, int t_arrival, int bCount, int thread_id, int pproc);
     Burst* nxtBst(ifstream &fin);
-    queue<Burst*> getBurstQ();
+    queue<Burst*>& getBurstQ();
     int getArrival();
     int getBurstCount();
     int getThreadID();
