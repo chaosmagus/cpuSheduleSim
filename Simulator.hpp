@@ -40,15 +40,15 @@ public:
     //member functions
     Proc* nxtProc(ifstream &fin);    
     vector<Proc*> getProcVec();
-    void printEvent(int time, Event* e);
+    void printEvent(int time, Event* e, int algorithm);
     void runFCFS();
     void runRR();
     void runPRIORITY();
     void runCUSTOM();
     void thread_arrived(int algorithm);
     void dispatch_invoked(Thread* t, int algorithm);
-    void proc_dispatch_complete(Thread* t);
-    void thd_dispatch_complete(Thread* t);
+    void proc_dispatch_complete(Thread* t, int algorithm);
+    void thd_dispatch_complete(Thread* t, int algorithm);
     void io_burst(int algorithm);
     void cpu_burst(Thread* t, int algorithm);
     void cleanup();

@@ -89,7 +89,7 @@ void Simulator::thread_arrived(int algorithm){
 };
 void Simulator::fcfs_arrival(Event* e){
     while(e->getEventTime() <= totalTime && !(arrivalEventQ.empty())){
-        printEvent(e->getEventTime(), e);
+        printEvent(e->getEventTime(), e, 0);
         events.push(e);
         ready.push(e->getParentThread());
         arrivalEventQ.pop();
@@ -99,7 +99,7 @@ void Simulator::fcfs_arrival(Event* e){
 
 void Simulator::priority_arrival(Event* e){
     while(e->getEventTime() <= totalTime && !(arrivalEventQ.empty())){
-        printEvent(e->getEventTime(), e);
+        printEvent(e->getEventTime(), e, 1);
         events.push(e);
         int priority = e->getParentThread()->getPriority();
         switch(priority){
@@ -129,31 +129,31 @@ void Simulator::dispatch_invoked(Thread* t, int algorithm){
     //create event and push to event queue
     Event* e = new Event (7, t, totalTime);
     events.push(e);
-    printEvent(totalTime, e); 
+    printEvent(totalTime, e, algorithm); 
     //increment time step
     if(t->getParentID() != currentProcID){ incrementTime(pxCost, algorithm);}
     else {incrementTime(txCost, algorithm);}
 };
 
-void Simulator::thd_dispatch_complete(Thread* t){
+void Simulator::thd_dispatch_complete(Thread* t, int algorithm){
     //set thd starting time, update state to ready/run(ie '1')
     Event* e = new Event(1, t, totalTime);    
     currentProcID = t->getParentID();
     t->setStartTime(totalTime);  
     t->updateState(1);
     events.push(e);
-    printEvent(totalTime, e);
+    printEvent(totalTime, e, algorithm);
 
 };
 
-void Simulator::proc_dispatch_complete(Thread* t){
+void Simulator::proc_dispatch_complete(Thread* t, int algorithm){
     //set thd starting time, update state to ready/run(ie '1')
     Event* e = new Event(2, t, totalTime);    
     currentProcID = t->getParentID();
     t->setStartTime(totalTime);  
     t->updateState(1);
     events.push(e);
-    printEvent(totalTime, e);
+    printEvent(totalTime, e, algorithm);
 };
 
 void Simulator::cpu_burst(Thread* t, int algorithm){
@@ -164,7 +164,7 @@ void Simulator::cpu_burst(Thread* t, int algorithm){
         t->updateState(4);       
         Event* e = new Event(5, t, totalTime);    
         events.push(e);
-        printEvent(totalTime, e);
+        printEvent(totalTime, e, algorithm);
     } else {
     //otherwise update state to run/blk (ie '2'), push thread onto 'blocked' queue
         t->updateState(2);
@@ -173,7 +173,7 @@ void Simulator::cpu_burst(Thread* t, int algorithm){
         blocked.push(t);
         events.push(e);
         cout << "CPU TIME " << blocked.top()->getBurstQ().front()->getCPU() << endl;
-        printEvent(totalTime, e);
+        printEvent(totalTime, e, algorithm);
     }
 };
 
@@ -183,7 +183,7 @@ void Simulator::io_burst(int algorithm){
         blocked.top()->updateState(3);
         Event* e = new Event(4, blocked.top(), blocked.top()->getBlockTime());    
         events.push(e);
-        printEvent(blocked.top()->getBlockTime(), e);
+        printEvent(blocked.top()->getBlockTime(), e, algorithm);
         cout << "IO TIME before" << blocked.top()->getBurstQ().front()->getIO() << endl;
         blocked.top()->getBurstQ().pop();
         cout << "IO TIME after" << blocked.top()->getBurstQ().front()->getIO() << endl;
@@ -227,8 +227,8 @@ void Simulator::runFCFS(){
     thread_arrived(0);
     while(!ready.empty()){  
         dispatch_invoked(ready.front(), 0);
-        if(ready.front()->getParentID() != currentProcID){ proc_dispatch_complete(ready.front());}
-        else { thd_dispatch_complete(ready.front()); }
+        if(ready.front()->getParentID() != currentProcID){ proc_dispatch_complete(ready.front(), 0);}
+        else { thd_dispatch_complete(ready.front(), 0); }
         cpu_burst(ready.front(), 0);
         Thread* tmp = ready.front();
         ready.pop();
@@ -253,32 +253,32 @@ void Simulator::runPRIORITY(){
     while(!(sysReady.empty()) || !(intReady.empty()) || !(normReady.empty()) || !(batchReady.empty())){
         if(!(sysReady.empty())){
             dispatch_invoked(sysReady.front(), 1);
-            if(sysReady.front()->getParentID() != currentProcID){ proc_dispatch_complete(sysReady.front());}
-            else { thd_dispatch_complete(sysReady.front()); }
+            if(sysReady.front()->getParentID() != currentProcID){ proc_dispatch_complete(sysReady.front(), 1);}
+            else { thd_dispatch_complete(sysReady.front(), 1); }
             cpu_burst(sysReady.front(), 1);
             tmp = sysReady.front();
             sysReady.pop();
             
         } else if (!(intReady.empty())) {
             dispatch_invoked(intReady.front(), 1);
-            if(intReady.front()->getParentID() != currentProcID){ proc_dispatch_complete(intReady.front());}
-            else { thd_dispatch_complete(intReady.front()); }
+            if(intReady.front()->getParentID() != currentProcID){ proc_dispatch_complete(intReady.front(), 1);}
+            else { thd_dispatch_complete(intReady.front(), 1); }
             cpu_burst(intReady.front(), 1);
             tmp = intReady.front();
             intReady.pop();
 
         } else if(!(normReady.empty())){
             dispatch_invoked(normReady.front(), 1);
-            if(normReady.front()->getParentID() != currentProcID){ proc_dispatch_complete(normReady.front());}
-            else { thd_dispatch_complete(normReady.front()); }
+            if(normReady.front()->getParentID() != currentProcID){ proc_dispatch_complete(normReady.front(), 1);}
+            else { thd_dispatch_complete(normReady.front(), 1); }
             cpu_burst(normReady.front(), 1);
             tmp = normReady.front();
             normReady.pop();
 
         } else if(!(batchReady.empty())){
             dispatch_invoked(batchReady.front(), 1);
-            if(batchReady.front()->getParentID() != currentProcID){ proc_dispatch_complete(batchReady.front());}
-            else { thd_dispatch_complete(batchReady.front()); }
+            if(batchReady.front()->getParentID() != currentProcID){ proc_dispatch_complete(batchReady.front(), 1);}
+            else { thd_dispatch_complete(batchReady.front(), 1); }
             cpu_burst(batchReady.front(), 1);
             tmp = batchReady.front();
             batchReady.pop();
@@ -321,7 +321,7 @@ void Simulator::runPRIORITY(){
 void Simulator::runCUSTOM(){
 
 };
-void  Simulator::printEvent(int time, Event* e){
+void  Simulator::printEvent(int time, Event* e, int algorithm){
         cout << "At Time " << time << ":" << endl;
         int event_type = e->getEventType();
         switch (event_type) {
@@ -363,7 +363,37 @@ void  Simulator::printEvent(int time, Event* e){
         }
         //print thread state change or the dispatch choice
         if(event_type == 7){
-            cout << "\tSelected from " << ready.size() << " threads\n\n";
+            switch (algorithm) {
+                case 0: cout << "\tSelected from " << ready.size() << " threads\n\n";
+                        break;
+                case 1:
+                        switch(priority){
+                            case 0:
+                                cout << "\tSelected from " << sysReady.size() << " threads\n\n";
+                                break;
+                            case 1:
+                                cout << "\tSelected from " << intReady.size() << " threads\n\n";
+                                break;
+                            case 2:
+                                cout << "\tSelected from " << normReady.size() << " threads\n\n";
+                                break;
+                            case 3:
+                                cout << "\tSelected from " << batchReady.size() << " threads\n\n";
+                                break;
+                            default:
+                                cerr << "SOMETHING HAS GONE HORRIBLY WRONG\n";
+                                break;
+                        }
+                        break;
+                case 2: //rr_arrival(e);
+                        break;
+                case 3: //custom_arrival;
+                        break;
+                default:
+                        cerr << "SOMETHING HAS GONE HORRIBLY WRONG\n" << endl;
+                        break;
+            }
+
         } else {
             int state = e->getParentThread()->getState();
             cout << "\tTransitioned from ";
