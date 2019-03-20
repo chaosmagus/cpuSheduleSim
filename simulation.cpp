@@ -70,7 +70,7 @@ int main(int argc, char * argv[]) {
     } else if(algo == "rr"){
         //mysim.runRR(); 
     } else if(algo == "priority"){
-        //mysim.runPRIORITY();
+        mysim.runPRIORITY();
     } else if(algo == "custom"){
         //mysim.runCUSTOM();
     } else {

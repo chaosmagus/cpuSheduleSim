@@ -45,14 +45,16 @@ public:
     void runRR();
     void runPRIORITY();
     void runCUSTOM();
-    void thread_arrived();
-    void dispatch_invoked(Thread* t);
+    void thread_arrived(int algorithm);
+    void dispatch_invoked(Thread* t, int algorithm);
     void proc_dispatch_complete(Thread* t);
     void thd_dispatch_complete(Thread* t);
-    void io_burst();
-    void cpu_burst(Thread* t);
+    void io_burst(int algorithm);
+    void cpu_burst(Thread* t, int algorithm);
     void cleanup();
-    void incrementTime(int t);
+    void incrementTime(int t, int algorithm);
+    void fcfs_arrival(Event* e);
+    void priority_arrival(Event* e);
 
     priority_queue<Event*, vector<Event*>, Compare> getEvents();
     priority_queue<Event*, vector<Event*>, Compare> getArrivalEventQ();
@@ -62,7 +64,7 @@ private:
     vector<Proc*> procsToRun;
     priority_queue<Thread*, vector<Thread*>, CompareT> blocked;
     priority_queue<Event*, vector<Event*>, Compare> arrivalEventQ;
-    queue<Thread*> ready;
+    queue<Thread*> ready, sysReady, intReady, normReady, batchReady;
     priority_queue<Event*, vector<Event*>, Compare> events;
 };
 #endif /* Simulator_hpp */

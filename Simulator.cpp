@@ -64,15 +64,30 @@ priority_queue<Event*, vector<Event*>, Compare> Simulator::getArrivalEventQ(){
     return arrivalEventQ;
 };
 
-void Simulator::incrementTime(int t){
+void Simulator::incrementTime(int t, int algorithm){
     totalTime += t;
-    thread_arrived();
-    if(!blocked.empty()){io_burst();}
+    thread_arrived(algorithm);
+    if(!blocked.empty()){io_burst(algorithm);}
 };
 
-void Simulator::thread_arrived(){
+void Simulator::thread_arrived(int algorithm){
     //check the thread_arrived pque for new threads
     Event* e = arrivalEventQ.top();
+    switch (algorithm) {
+        case 0: fcfs_arrival(e);
+                break;
+        case 1: priority_arrival(e);
+                break;
+        case 2: //rr_arrival(e);
+                break;
+        case 3: //custom_arrival;
+                break;
+        default:
+                cerr << "SOMETHING HAS GONE HORRIBLY WRONG\n" << endl;
+                break;
+    }
+};
+void Simulator::fcfs_arrival(Event* e){
     while(e->getEventTime() <= totalTime && !(arrivalEventQ.empty())){
         printEvent(e->getEventTime(), e);
         events.push(e);
@@ -82,14 +97,42 @@ void Simulator::thread_arrived(){
     }
 };
 
-void Simulator::dispatch_invoked(Thread* t){
+void Simulator::priority_arrival(Event* e){
+    while(e->getEventTime() <= totalTime && !(arrivalEventQ.empty())){
+        printEvent(e->getEventTime(), e);
+        events.push(e);
+        int priority = e->getParentThread()->getPriority();
+        switch(priority){
+            case 0:
+                sysReady.push(e->getParentThread());
+                break;
+            case 1:
+                intReady.push(e->getParentThread());
+                break;
+            case 2:
+                normReady.push(e->getParentThread());
+                break;
+            case 3:
+                batchReady.push(e->getParentThread());
+                break;
+            default:
+                cerr << "SOMETHING HAS GONE HORRIBLY WRONG\n";
+                break;
+        }
+        arrivalEventQ.pop();
+        e = arrivalEventQ.top();
+    }
+
+};
+
+void Simulator::dispatch_invoked(Thread* t, int algorithm){
     //create event and push to event queue
     Event* e = new Event (7, t, totalTime);
     events.push(e);
     printEvent(totalTime, e); 
     //increment time step
-    if(t->getParentID() != currentProcID){ incrementTime(pxCost);}
-    else {incrementTime(txCost);}
+    if(t->getParentID() != currentProcID){ incrementTime(pxCost, algorithm);}
+    else {incrementTime(txCost, algorithm);}
 };
 
 void Simulator::thd_dispatch_complete(Thread* t){
@@ -113,8 +156,8 @@ void Simulator::proc_dispatch_complete(Thread* t){
     printEvent(totalTime, e);
 };
 
-void Simulator::cpu_burst(Thread* t){
-    incrementTime(t->getBurstQ().front()->getCPU());    
+void Simulator::cpu_burst(Thread* t, int algorithm){
+    incrementTime(t->getBurstQ().front()->getCPU(), algorithm);    
     //if this burst is the last burst in the thread, set end time, update state to run/exit(ie '5')
     if(t->getBurstQ().front()->isLast()){
         t->setEndTime(totalTime);
@@ -134,7 +177,7 @@ void Simulator::cpu_burst(Thread* t){
     }
 };
 
-void Simulator::io_burst(){
+void Simulator::io_burst(int algorithm){
     //check the blocked pque for threads ready to be moved to 'ready', pop burst from burst queue
     while(blocked.top()->getBlockTime() <= totalTime && !(blocked.empty())){
         blocked.top()->updateState(3);
@@ -144,27 +187,57 @@ void Simulator::io_burst(){
         cout << "IO TIME before" << blocked.top()->getBurstQ().front()->getIO() << endl;
         blocked.top()->getBurstQ().pop();
         cout << "IO TIME after" << blocked.top()->getBurstQ().front()->getIO() << endl;
-        ready.push(blocked.top());
-        blocked.pop();
+        int p = blocked.top()->getPriority();
+        switch (algorithm) {
+            case 0: ready.push(blocked.top());
+                    break;
+            case 1:
+                    switch(p){
+                        case 0:
+                            sysReady.push(e->getParentThread());
+                            break;
+                        case 1:
+                            intReady.push(e->getParentThread());
+                            break;
+                        case 2:
+                            normReady.push(e->getParentThread());
+                            break;
+                        case 3:
+                            batchReady.push(e->getParentThread());
+                            break;
+                        default:
+                            cerr << "SOMETHING HAS GONE HORRIBLY WRONG\n";
+                            break;
+                    }
+                    break;
+            case 2: //rr_arrival(e);
+                    break;
+            case 3: //custom_arrival;
+                    break;
+            default:
+                    cerr << "SOMETHING HAS GONE HORRIBLY WRONG\n" << endl;
+                    break;
+        }
+         blocked.pop();
     }
 };
 
 void Simulator::runFCFS(){
     //enque any new threads that have arrived, call dispatcher, loop through the ready queue
-    thread_arrived();
+    thread_arrived(0);
     while(!ready.empty()){  
-        dispatch_invoked(ready.front());
+        dispatch_invoked(ready.front(), 0);
         if(ready.front()->getParentID() != currentProcID){ proc_dispatch_complete(ready.front());}
         else { thd_dispatch_complete(ready.front()); }
-        cpu_burst(ready.front());
+        cpu_burst(ready.front(), 0);
         Thread* tmp = ready.front();
         ready.pop();
         //if readyQ is empty but blocked is not, increment time by the IO burst at front of blockedQ
-        if(ready.empty() && !(blocked.empty())){incrementTime(tmp->getBurstQ().front()->getIO());}
+        if(ready.empty() && !(blocked.empty())){incrementTime(tmp->getBurstQ().front()->getIO(), 0);}
         //if readyQ is empty but arrivalEventQ is not, increment time and get the new thread. 
         if(ready.empty() && !(arrivalEventQ.empty())){
             cout << "in the loop" << endl;
-            incrementTime((arrivalEventQ.top()->getEventTime()) - totalTime);}
+            incrementTime((arrivalEventQ.top()->getEventTime()) - totalTime, 0);}
     }
 };
 
@@ -174,6 +247,74 @@ void Simulator::runRR(){
 
 
 void Simulator::runPRIORITY(){
+    //enque any new threads that have arrived, call dispatcher, loop through the ready queue
+    thread_arrived(1);
+    Thread* tmp;
+    while(!(sysReady.empty()) || !(intReady.empty()) || !(normReady.empty()) || !(batchReady.empty())){
+        if(!(sysReady.empty())){
+            dispatch_invoked(sysReady.front(), 1);
+            if(sysReady.front()->getParentID() != currentProcID){ proc_dispatch_complete(sysReady.front());}
+            else { thd_dispatch_complete(sysReady.front()); }
+            cpu_burst(sysReady.front(), 1);
+            tmp = sysReady.front();
+            sysReady.pop();
+            
+        } else if (!(intReady.empty())) {
+            dispatch_invoked(intReady.front(), 1);
+            if(intReady.front()->getParentID() != currentProcID){ proc_dispatch_complete(intReady.front());}
+            else { thd_dispatch_complete(intReady.front()); }
+            cpu_burst(intReady.front(), 1);
+            tmp = intReady.front();
+            intReady.pop();
+
+        } else if(!(normReady.empty())){
+            dispatch_invoked(normReady.front(), 1);
+            if(normReady.front()->getParentID() != currentProcID){ proc_dispatch_complete(normReady.front());}
+            else { thd_dispatch_complete(normReady.front()); }
+            cpu_burst(normReady.front(), 1);
+            tmp = normReady.front();
+            normReady.pop();
+
+        } else if(!(batchReady.empty())){
+            dispatch_invoked(batchReady.front(), 1);
+            if(batchReady.front()->getParentID() != currentProcID){ proc_dispatch_complete(batchReady.front());}
+            else { thd_dispatch_complete(batchReady.front()); }
+            cpu_burst(batchReady.front(), 1);
+            tmp = batchReady.front();
+            batchReady.pop();
+
+        }
+
+
+        //if readyQueues are empty but blocked is not, increment time by the IO burst at front of blockedQ
+        if(sysReady.empty() && intReady.empty() && normReady.empty() && batchReady.empty() && !(blocked.empty())){
+            incrementTime(tmp->getBurstQ().front()->getIO(), 1);
+        }
+        //if readyQueues are empty but arrivalEventQ is not, increment time and get the new thread. 
+        if(sysReady.empty() && intReady.empty() && normReady.empty() && batchReady.empty() && !(arrivalEventQ.empty())){
+            cout << "in the loop" << endl;
+            incrementTime((arrivalEventQ.top()->getEventTime()) - totalTime, 1);}
+    }
+
+
+
+
+
+
+    /*while(!ready.empty()){  
+        dispatch_invoked(ready.front(), 1);
+        if(ready.front()->getParentID() != currentProcID){ proc_dispatch_complete(ready.front());}
+        else { thd_dispatch_complete(ready.front()); }
+        cpu_burst(ready.front(), 1);
+        Thread* tmp = ready.front();
+        ready.pop();
+        //if readyQ is empty but blocked is not, increment time by the IO burst at front of blockedQ
+        if(ready.empty() && !(blocked.empty())){incrementTime(tmp->getBurstQ().front()->getIO(), 1);}
+        //if readyQ is empty but arrivalEventQ is not, increment time and get the new thread. 
+        if(ready.empty() && !(arrivalEventQ.empty())){
+            cout << "in the loop" << endl;
+            incrementTime((arrivalEventQ.top()->getEventTime()) - totalTime, 1);}
+    }*/
 
 };
 
