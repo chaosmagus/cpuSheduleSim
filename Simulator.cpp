@@ -159,7 +159,12 @@ void Simulator::runFCFS(){
         cpu_burst(ready.front());
         Thread* tmp = ready.front();
         ready.pop();
+        //if readyQ is empty but blocked is not, increment time by the IO burst at front of blockedQ
         if(ready.empty() && !(blocked.empty())){incrementTime(tmp->getBurstQ().front()->getIO());}
+        //if readyQ is empty but arrivalEventQ is not, increment time and get the new thread. 
+        if(ready.empty() && !(arrivalEventQ.empty())){
+            cout << "in the loop" << endl;
+            incrementTime((arrivalEventQ.top()->getEventTime()) - totalTime);}
     }
 };
 
