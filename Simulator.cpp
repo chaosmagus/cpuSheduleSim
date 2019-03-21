@@ -11,7 +11,8 @@ Simulator::Simulator(ifstream &fin, int pTotal, int tCost, int pCost){
     txCost = tCost;
     pxCost = pCost;
     totalTime = 0;
-    currentProcID = -1; 
+    currentProcID = -1;
+    sysRT = sysTAT = sysTotal = intTotal = intRT = intTAT = normRT = normTAT = normTotal = batchTotal = batchRT = batchTAT = totalTime = ioTime = cpuTime = dispTime = idle = 0; 
    //loop here to build proc vector using nxtProc()
     for(int i = 0; i < procTotal; i++){
        procsToRun.push_back(this->nxtProc(fin)); 
@@ -131,8 +132,13 @@ void Simulator::dispatch_invoked(Thread* t, int algorithm){
     events.push(e);
     printEvent(totalTime, e, algorithm); 
     //increment time step
-    if(t->getParentID() != currentProcID){ incrementTime(pxCost, algorithm);}
-    else {incrementTime(txCost, algorithm);}
+    if(t->getParentID() != currentProcID){ 
+        incrementTime(pxCost, algorithm);
+        dispTime += pxCost;    
+    } else {
+        incrementTime(txCost, algorithm);
+        dispTime += txCost;
+    }
 };
 
 void Simulator::thd_dispatch_complete(Thread* t, int algorithm){
@@ -162,6 +168,24 @@ void Simulator::cpu_burst(Thread* t, int algorithm){
     if(t->getBurstQ().front()->isLast()){
         t->setEndTime(totalTime);
         t->updateState(4);       
+        int p = t->getPriority();
+        switch (p) {
+            case 0: this->sysTAT += (totalTime - t->getArrival());
+                    //cout << sysTotal << " [SYSTEM]" << endl;
+                    break;
+            case 1: this->intTAT += (totalTime - t->getArrival());
+                    //cout << intTotal << " [INTERACTIVE]" << endl;
+                    break;
+            case 2: this->normTAT += (totalTime - t->getArrival());  
+                    //cout << normTotal << " [NORMAL]" << endl;
+                    break;
+            case 3: this->batchTAT += (totalTime - t->getArrival()); 
+                    //cout << batchTotal << " [BATCH]" << endl;
+                    break;
+            default:
+                    cerr << "INVALID TYPE CODE DIS VERY BAD!" << endl;
+                    break;
+        }
         Event* e = new Event(5, t, totalTime);    
         events.push(e);
         printEvent(totalTime, e, algorithm);
@@ -414,4 +438,45 @@ void  Simulator::printEvent(int time, Event* e, int algorithm){
             }
         }
 };
+
+void Simulator::printStats(){
+    cout << "SYSTEM THREADS:" << endl;
+    cout << "\tTotal count: " << sysTotal << endl;
+    cout << "\tAvg response time: " << sysRT << endl;
+    cout << "\tAvg turnaround time: " << sysTAT/sysTotal << endl << endl;
+    
+    cout << "INTERACTIVE THREADS:" << endl;
+    cout << "\tTotal count: " << intTotal << endl;
+    cout << "\tAvg response time: " << intRT << endl;
+    cout << "\tAvg turnaround time: " << intTAT/intTotal << endl << endl;
+
+    cout << "NORMAL THREADS:" << endl;
+    cout << "\tTotal count: " << normTotal << endl;
+    cout << "\tAvg response time: " << normRT << endl;
+    cout << "\tAvg turnaround time: " << normTAT/normTotal << endl << endl;
+
+    cout << "BATCH THREADS:" << endl;
+    cout << "\tTotal count: " << batchTotal << endl;
+    cout << "\tAvg response time: " << batchRT << endl;
+    cout << "\tAvg turnaround time: " << batchTAT/batchTotal << endl << endl;
+
+    cout << "Total elapsed time: " << totalTime << endl;
+    cout << "Total service time: " << cpuTime << endl;
+    cout << "Total I/O time: " << ioTime << endl;
+    cout << "Total dispatch time: " << dispTime << endl;
+    cout << "Total idle time: " << (totalTime - cpuTime - dispTime) << endl << endl;
+
+    double efficiency = 100 * cpuTime/totalTime;
+    double utilization = 100 * (cpuTime + dispTime)/totalTime; 
+    cout << "CPU utilization: "<< utilization << " %" << endl;
+    cout << "CPU efficiency: "<< efficiency << " %" << endl << endl;
+};
+
+
+
+
+
+
+
+
 

@@ -55,11 +55,12 @@ public:
     void incrementTime(int t, int algorithm);
     void fcfs_arrival(Event* e);
     void priority_arrival(Event* e);
+    void printStats();
 
     priority_queue<Event*, vector<Event*>, Compare> getEvents();
     priority_queue<Event*, vector<Event*>, Compare> getArrivalEventQ();
 private:
-    int procTotal, txCost, pxCost, sysRT, sysTAT, sysTotal, intTotal, intRT, intTAT, normRT, normTAT, 
+    double procTotal, txCost, pxCost, sysRT, sysTAT, sysTotal, intTotal, intRT, intTAT, normRT, normTAT, 
         normTotal, batchTotal, batchRT, batchTAT, totalTime, ioTime, cpuTime, dispTime, idle, currentProcID;
     vector<Proc*> procsToRun;
     priority_queue<Thread*, vector<Thread*>, CompareT> blocked;

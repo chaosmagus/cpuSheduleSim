@@ -79,7 +79,7 @@ int main(int argc, char * argv[]) {
     }
   
     // mysim.cleanup();
- 
+    mysim.printStats(); 
     return 0;
 }
 
