@@ -266,6 +266,22 @@ void Simulator::runFCFS(){
 };
 
 void Simulator::runRR(){
+    //enque any new threads that have arrived, call dispatcher, loop through the ready queue
+    thread_arrived(0);
+    while(!ready.empty()){  
+        dispatch_invoked(ready.front(), 0);
+        if(ready.front()->getParentID() != currentProcID){ proc_dispatch_complete(ready.front(), 0);}
+        else { thd_dispatch_complete(ready.front(), 0); }
+        cpu_burst(ready.front(), 0);
+        Thread* tmp = ready.front();
+        ready.pop();
+        //if readyQ is empty but blocked is not, increment time by the IO burst at front of blockedQ
+        if(ready.empty() && !(blocked.empty())){incrementTime(tmp->getBurstQ().front()->getIO(), 0);}
+        //if readyQ is empty but arrivalEventQ is not, increment time and get the new thread. 
+        if(ready.empty() && !(arrivalEventQ.empty())){
+            cout << "in the loop" << endl;
+            incrementTime((arrivalEventQ.top()->getEventTime()) - totalTime, 0);}
+    }
 
 };
 
@@ -473,7 +489,14 @@ void Simulator::printStats(){
 };
 
 
-
+void Simulator::threadStats(){
+    for(int i = 0; i < procsToRun.size(); i++){
+        cout << "Process " << i << procsToRun[i]->getProcType(); 
+        for(int j = 0; j < procsToRun[i]->getThdCnt(); j++){
+            cout << "\tThread " << j << ":\tARR: " << procsToRun[i]->getThreadQ()[j]->getArrival() << "\t\tCPU: " << procsToRun[i]->getThreadQ()[j]->getCPU() << "\t\tI/O: " << procsToRun[i]->getThreadQ()[j]->getIO() << "\t\tTRT: " << procsToRun[i]->getThreadQ()[j]->getTurnAroundTime() << " \tEND: " << procsToRun[i]->getThreadQ()[j]->getEndTime() << endl; 
+        }
+    }
+};
 
 
 

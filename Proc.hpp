@@ -14,7 +14,7 @@ public:
     Thread* nxtThd(ifstream &fin, int thread_id);
     vector<Thread*>& getThreadQ();
     int getProcID();
-    int getProcType();
+    string getProcType();
     int getThdCnt();
     int proc_cpu();
     int proc_io();    

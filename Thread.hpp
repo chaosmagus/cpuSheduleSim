@@ -28,6 +28,7 @@ public:
     int getCPU();
     int getState();
     int getBlockTime() const;
+    int getEndTime();
      
     void updateState(int state);
     void setStartTime(int t);

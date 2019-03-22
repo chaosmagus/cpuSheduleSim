@@ -56,6 +56,7 @@ public:
     void fcfs_arrival(Event* e);
     void priority_arrival(Event* e);
     void printStats();
+    void threadStats();
 
     priority_queue<Event*, vector<Event*>, Compare> getEvents();
     priority_queue<Event*, vector<Event*>, Compare> getArrivalEventQ();

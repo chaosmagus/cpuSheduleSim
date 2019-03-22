@@ -22,7 +22,7 @@ int main(int argc, char * argv[]) {
     ifstream fin;
     int proc_count, thread_cost, proc_cost;
     string algo = "fcfs"; 
-    
+    bool t, v; 
 
 //process command line arguments, check for error opening filestream
     if( argc == 2 ){ fin.open(argv[1]); }
@@ -43,9 +43,11 @@ int main(int argc, char * argv[]) {
                 exit(1);
                 break;
             case 't':
+                t = true;
                 cout << "flag was t\n";
                 break;
             case 'v':
+                v = true;
                 cout << "flag was v\n";
                 break;
             default:
@@ -80,6 +82,7 @@ int main(int argc, char * argv[]) {
   
     // mysim.cleanup();
     mysim.printStats(); 
+    if(t) mysim.threadStats();
     return 0;
 }
 

@@ -38,8 +38,21 @@ int Proc::getProcID(){
     return id;
 };
 
-int Proc::getProcType(){
-    return type;
+string Proc::getProcType(){
+    string tmp;
+    switch(this->type){
+        case 0: tmp = " [SYSTEM]:\n"; 
+                break;
+        case 1: tmp = " [INTERACTIVE]:\n";
+                break;
+        case 2: tmp = " [NORMAL]:\n";
+                break;
+        case 3: tmp = " [BATCH]:\n";
+                break;
+        default:
+            break;
+    }
+    return tmp;
 };
 
 int Proc::getThdCnt(){

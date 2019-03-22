@@ -73,7 +73,12 @@ int Thread::getResponseTime(){
 };
 
 int Thread::getTurnAroundTime(){
+    this->turnAroundTime = (this->endTime - this->arrivalTime);
     return turnAroundTime; 
+};
+
+int Thread::getEndTime(){
+    return this->endTime;
 };
 
 int Thread::getIO(){
