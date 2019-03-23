@@ -26,3 +26,6 @@ bool Burst::isLast(){
     return false;
 };
 
+void Burst::decrementCPU(int timeSlice){
+    this->cpu -= timeSlice;    
+};

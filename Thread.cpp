@@ -15,6 +15,7 @@ Thread::Thread(ifstream &fin, int thd_priority, int t_arrival, int bCount, int t
     parent_proc = pproc;
     cpuTime = 0;
     ioTime = 0; 
+    isNew = true;
     //loop to add bursts
     for(int i = 0; i < (bCount - 1); i ++){
         bursts.push(this->nxtBst(fin));
@@ -27,6 +28,17 @@ Thread::Thread(ifstream &fin, int thd_priority, int t_arrival, int bCount, int t
     bursts.push(final);
 }
 
+bool Thread::checkNew(){
+    return isNew;
+};
+
+void Thread::notNew(){
+    this->isNew = false;
+};
+
+int Thread::getStartTime(){
+    return this->startTime;
+};
 void Thread::setBlockTime(int t){
     blockTime = t;
 };

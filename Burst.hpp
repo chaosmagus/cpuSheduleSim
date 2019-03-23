@@ -13,6 +13,7 @@ public:
     Burst();
     Burst(int cpu_t, int io_t, int last);
     int getCPU();
+    void decrementCPU(int timeSlice);
     int getIO();
     bool isLast();
 

@@ -6,12 +6,14 @@
 
 Simulator::Simulator(){}
 
-Simulator::Simulator(ifstream &fin, int pTotal, int tCost, int pCost){
+Simulator::Simulator(ifstream &fin, int pTotal, int tCost, int pCost, bool v){
     procTotal = pTotal;
     txCost = tCost;
     pxCost = pCost;
     totalTime = 0;
     currentProcID = -1;
+    timeSlice = 3;
+    verbose = v;
     sysRT = sysTAT = sysTotal = intTotal = intRT = intTAT = normRT = normTAT = normTotal = batchTotal = batchRT = batchTAT = totalTime = ioTime = cpuTime = dispTime = idle = 0; 
    //loop here to build proc vector using nxtProc()
     for(int i = 0; i < procTotal; i++){
@@ -90,7 +92,7 @@ void Simulator::thread_arrived(int algorithm){
 };
 void Simulator::fcfs_arrival(Event* e){
     while(e->getEventTime() <= totalTime && !(arrivalEventQ.empty())){
-        printEvent(e->getEventTime(), e, 0);
+        if(verbose){printEvent(e->getEventTime(), e, 0);}
         events.push(e);
         ready.push(e->getParentThread());
         arrivalEventQ.pop();
@@ -100,7 +102,7 @@ void Simulator::fcfs_arrival(Event* e){
 
 void Simulator::priority_arrival(Event* e){
     while(e->getEventTime() <= totalTime && !(arrivalEventQ.empty())){
-        printEvent(e->getEventTime(), e, 1);
+        if(verbose){printEvent(e->getEventTime(), e, 1);}
         events.push(e);
         int priority = e->getParentThread()->getPriority();
         switch(priority){
@@ -130,7 +132,7 @@ void Simulator::dispatch_invoked(Thread* t, int algorithm){
     //create event and push to event queue
     Event* e = new Event (7, t, totalTime);
     events.push(e);
-    printEvent(totalTime, e, algorithm); 
+    if(verbose){printEvent(totalTime, e, algorithm);} 
     //increment time step
     if(t->getParentID() != currentProcID){ 
         incrementTime(pxCost, algorithm);
@@ -145,10 +147,13 @@ void Simulator::thd_dispatch_complete(Thread* t, int algorithm){
     //set thd starting time, update state to ready/run(ie '1')
     Event* e = new Event(1, t, totalTime);    
     currentProcID = t->getParentID();
-    t->setStartTime(totalTime);  
+    if(t->checkNew()){
+        t->setStartTime(totalTime);  
+        t->notNew();
+    }
     t->updateState(1);
     events.push(e);
-    printEvent(totalTime, e, algorithm);
+    if(verbose){printEvent(totalTime, e, algorithm);}
 
 };
 
@@ -156,48 +161,63 @@ void Simulator::proc_dispatch_complete(Thread* t, int algorithm){
     //set thd starting time, update state to ready/run(ie '1')
     Event* e = new Event(2, t, totalTime);    
     currentProcID = t->getParentID();
-    t->setStartTime(totalTime);  
+    if(t->checkNew()){
+        t->setStartTime(totalTime);  
+        t->notNew();
+    }
     t->updateState(1);
     events.push(e);
-    printEvent(totalTime, e, algorithm);
+    if(verbose){printEvent(totalTime, e, algorithm);}
 };
 
 void Simulator::cpu_burst(Thread* t, int algorithm){
-    incrementTime(t->getBurstQ().front()->getCPU(), algorithm);    
-    //if this burst is the last burst in the thread, set end time, update state to run/exit(ie '5')
-    if(t->getBurstQ().front()->isLast()){
-        t->setEndTime(totalTime);
-        t->updateState(4);       
-        int p = t->getPriority();
-        switch (p) {
-            case 0: this->sysTAT += (totalTime - t->getArrival());
-                    //cout << sysTotal << " [SYSTEM]" << endl;
-                    break;
-            case 1: this->intTAT += (totalTime - t->getArrival());
-                    //cout << intTotal << " [INTERACTIVE]" << endl;
-                    break;
-            case 2: this->normTAT += (totalTime - t->getArrival());  
-                    //cout << normTotal << " [NORMAL]" << endl;
-                    break;
-            case 3: this->batchTAT += (totalTime - t->getArrival()); 
-                    //cout << batchTotal << " [BATCH]" << endl;
-                    break;
-            default:
-                    cerr << "INVALID TYPE CODE DIS VERY BAD!" << endl;
-                    break;
+     if((algorithm == 2) && (t->getBurstQ().front()->getCPU() > timeSlice)){
+            t->getBurstQ().front()->decrementCPU(timeSlice); 
+            incrementTime(timeSlice, algorithm);
+            t->updateState(5); 
+            Event* e = new Event(6, t, totalTime);    
+            events.push(e);
+            if(verbose){printEvent(totalTime, e, algorithm);}
+            ready.push(t);
+            //ready.pop();
+        
+    } else {    
+        incrementTime(t->getBurstQ().front()->getCPU(), algorithm);    
+        //if this burst is the last burst in the thread, set end time, update state to run/exit(ie '5')
+        if(t->getBurstQ().front()->isLast()){
+            t->setEndTime(totalTime);
+            t->updateState(4);       
+            int p = t->getPriority();
+            switch (p) {
+                case 0: this->sysTAT += (totalTime - t->getArrival());
+                        //cout << sysTotal << " [SYSTEM]" << endl;
+                        break;
+                case 1: this->intTAT += (totalTime - t->getArrival());
+                        //cout << intTotal << " [INTERACTIVE]" << endl;
+                        break;
+                case 2: this->normTAT += (totalTime - t->getArrival());  
+                        //cout << normTotal << " [NORMAL]" << endl;
+                        break;
+                case 3: this->batchTAT += (totalTime - t->getArrival()); 
+                        //cout << batchTotal << " [BATCH]" << endl;
+                        break;
+                default:
+                        cerr << "INVALID TYPE CODE DIS VERY BAD!" << endl;
+                        break;
+            }
+            Event* e = new Event(5, t, totalTime);    
+            events.push(e);
+            if(verbose){printEvent(totalTime, e, algorithm);}
+        } else {
+        //otherwise update state to run/blk (ie '2'), push thread onto 'blocked' queue
+            t->updateState(2);
+            Event* e = new Event(3, t, totalTime);    
+            t->setBlockTime(totalTime + t->getBurstQ().front()->getIO());
+            blocked.push(t);
+            events.push(e);
+            //cout << "CPU TIME " << blocked.top()->getBurstQ().front()->getCPU() << endl;
+            if(verbose){printEvent(totalTime, e, algorithm);}
         }
-        Event* e = new Event(5, t, totalTime);    
-        events.push(e);
-        printEvent(totalTime, e, algorithm);
-    } else {
-    //otherwise update state to run/blk (ie '2'), push thread onto 'blocked' queue
-        t->updateState(2);
-        Event* e = new Event(3, t, totalTime);    
-        t->setBlockTime(totalTime + t->getBurstQ().front()->getIO());
-        blocked.push(t);
-        events.push(e);
-        cout << "CPU TIME " << blocked.top()->getBurstQ().front()->getCPU() << endl;
-        printEvent(totalTime, e, algorithm);
     }
 };
 
@@ -207,10 +227,10 @@ void Simulator::io_burst(int algorithm){
         blocked.top()->updateState(3);
         Event* e = new Event(4, blocked.top(), blocked.top()->getBlockTime());    
         events.push(e);
-        printEvent(blocked.top()->getBlockTime(), e, algorithm);
-        cout << "IO TIME before" << blocked.top()->getBurstQ().front()->getIO() << endl;
+        if(verbose){ printEvent(blocked.top()->getBlockTime(), e, algorithm);}
+       // cout << "IO TIME before" << blocked.top()->getBurstQ().front()->getIO() << endl;
         blocked.top()->getBurstQ().pop();
-        cout << "IO TIME after" << blocked.top()->getBurstQ().front()->getIO() << endl;
+        //cout << "IO TIME after" << blocked.top()->getBurstQ().front()->getIO() << endl;
         int p = blocked.top()->getPriority();
         switch (algorithm) {
             case 0: ready.push(blocked.top());
@@ -234,7 +254,7 @@ void Simulator::io_burst(int algorithm){
                             break;
                     }
                     break;
-            case 2: //rr_arrival(e);
+            case 2: ready.push(blocked.top());
                     break;
             case 3: //custom_arrival;
                     break;
@@ -272,7 +292,7 @@ void Simulator::runRR(){
         dispatch_invoked(ready.front(), 0);
         if(ready.front()->getParentID() != currentProcID){ proc_dispatch_complete(ready.front(), 0);}
         else { thd_dispatch_complete(ready.front(), 0); }
-        cpu_burst(ready.front(), 0);
+        cpu_burst(ready.front(), 2);
         Thread* tmp = ready.front();
         ready.pop();
         //if readyQ is empty but blocked is not, increment time by the IO burst at front of blockedQ
@@ -448,6 +468,8 @@ void  Simulator::printEvent(int time, Event* e, int algorithm){
                         break;
                 case 4: cout << "RUNNING to EXIT\n" << endl;
                         break;
+                case 5: cout << "RUNNING to READY\n" << endl;
+                        break;
                 default:
                         cerr << "INVALID STATE\n" << endl;
                         break;
@@ -456,6 +478,7 @@ void  Simulator::printEvent(int time, Event* e, int algorithm){
 };
 
 void Simulator::printStats(){
+    calcResponse();
     cout << "SYSTEM THREADS:" << endl;
     cout << "\tTotal count: " << sysTotal << endl;
     cout << "\tAvg response time: " << sysRT << endl;
@@ -498,7 +521,33 @@ void Simulator::threadStats(){
     }
 };
 
-
+void Simulator::calcResponse(){
+    double system(0), interactive(0), normal(0),  batch(0);
+    for(int i = 0; i < procsToRun.size(); i++){
+        for(int j = 0; j < procsToRun[i]->getThdCnt(); j++){
+            int priority = procsToRun[i]->getThreadQ()[j]->getPriority(); 
+            double response = (procsToRun[i]->getThreadQ()[j]->getStartTime() - procsToRun[i]->getThreadQ()[j]->getArrival()); 
+            switch (priority) {
+                case 0: system += response;
+                        break;
+                case 1: interactive += response;
+                        break;
+                case 2: normal += response;
+                        break;
+                case 3: batch += response;
+                        break;
+                default:
+                        cerr << "INVALID PRIORITY CODE" << endl;
+                        break;
+            }
+        }
+    }
+    cout << sysTotal << " " << system <<  " " << endl;
+    this->sysRT = system/sysTotal;
+    this->intRT = interactive/intTotal;
+    this->normRT = normal/normTotal;
+    this->batchRT = batch/batchTotal;
+};
 
 
 

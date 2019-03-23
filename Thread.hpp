@@ -29,7 +29,10 @@ public:
     int getState();
     int getBlockTime() const;
     int getEndTime();
-     
+    int getStartTime(); 
+
+    bool checkNew(); 
+    void notNew(); 
     void updateState(int state);
     void setStartTime(int t);
     void setEndTime(int t);
@@ -39,6 +42,7 @@ private:
          priority, id, parent_proc, blockTime; 
     //ifstream inputFile;
     queue<Burst*> bursts;
+    bool isNew;
 };
 
 #endif /* Thread_hpp */

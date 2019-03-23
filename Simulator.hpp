@@ -35,7 +35,7 @@ class CompareT{
 class Simulator {
 public:
     Simulator();
-    Simulator(ifstream &fin, int pTotal, int tCost, int pCost);
+    Simulator(ifstream &fin, int pTotal, int tCost, int pCost, bool v);
     
     //member functions
     Proc* nxtProc(ifstream &fin);    
@@ -57,12 +57,13 @@ public:
     void priority_arrival(Event* e);
     void printStats();
     void threadStats();
+    void calcResponse();
 
     priority_queue<Event*, vector<Event*>, Compare> getEvents();
     priority_queue<Event*, vector<Event*>, Compare> getArrivalEventQ();
 private:
-    double procTotal, txCost, pxCost, sysRT, sysTAT, sysTotal, intTotal, intRT, intTAT, normRT, normTAT, 
-        normTotal, batchTotal, batchRT, batchTAT, totalTime, ioTime, cpuTime, dispTime, idle, currentProcID;
+    bool verbose;
+    double timeSlice, procTotal, txCost, pxCost, sysRT, sysTAT, sysTotal, intTotal, intRT, intTAT, normRT, normTAT, normTotal, batchTotal, batchRT, batchTAT, totalTime, ioTime, cpuTime, dispTime, idle, currentProcID;
     vector<Proc*> procsToRun;
     priority_queue<Thread*, vector<Thread*>, CompareT> blocked;
     priority_queue<Event*, vector<Event*>, Compare> arrivalEventQ;

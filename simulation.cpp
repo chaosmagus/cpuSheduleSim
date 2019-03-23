@@ -22,7 +22,8 @@ int main(int argc, char * argv[]) {
     ifstream fin;
     int proc_count, thread_cost, proc_cost;
     string algo = "fcfs"; 
-    bool t, v; 
+    bool t = false;
+    bool v = false;
 
 //process command line arguments, check for error opening filestream
     if( argc == 2 ){ fin.open(argv[1]); }
@@ -44,11 +45,11 @@ int main(int argc, char * argv[]) {
                 break;
             case 't':
                 t = true;
-                cout << "flag was t\n";
+                //cout << "flag was t\n";
                 break;
             case 'v':
                 v = true;
-                cout << "flag was v\n";
+                //cout << "flag was v\n";
                 break;
             default:
                 break;
@@ -63,14 +64,14 @@ int main(int argc, char * argv[]) {
 
 //get the total proc count, plus thread and proc switch cost, then initialize Simulator object
     fin >> proc_count >> thread_cost >> proc_cost;
-    Simulator mysim(fin, proc_count, thread_cost, proc_cost);
+    Simulator mysim(fin, proc_count, thread_cost, proc_cost, v);
  
 //convert to lowercase, check valid entry, and run simulation with selected algorithm
     transform(algo.begin(), algo.end(), algo.begin(), ::tolower);
     if(algo == "fcfs"){
         mysim.runFCFS();
     } else if(algo == "rr"){
-        //mysim.runRR(); 
+        mysim.runRR(); 
     } else if(algo == "priority"){
         mysim.runPRIORITY();
     } else if(algo == "custom"){
@@ -81,8 +82,8 @@ int main(int argc, char * argv[]) {
     }
   
     // mysim.cleanup();
-    mysim.printStats(); 
     if(t) mysim.threadStats();
+    mysim.printStats(); 
     return 0;
 }
 
